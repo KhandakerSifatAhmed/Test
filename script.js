@@ -1,132 +1,144 @@
 const gameContainer = document.getElementById('game-container');
 const chicken = document.getElementById('chicken');
 const scoreDisplay = document.getElementById('score');
+const startBtn = document.getElementById('start-btn');
+const overlay = document.getElementById('overlay');
 
 let score = 0;
+let gameActive = false;
 const eggImgSrc = 'pixel_egg.png';
 
-// Game constants
-const LAY_INTERVAL = 1500; // Lay an egg every 1.5s
-const MOVE_INTERVAL = 2000; // Move chicken every 2s
+// --- Game Settings ---
+const CHICKEN_SPEED = 2000; // ms for transition
+const LAY_RATE = 1200; // Lay an egg every 1.2s
 
-// Chicken Position State
-let chickenX = 50; // percentage
-let chickenY = 50; // percentage
+// Current Chicken State
+let currentX = 50;
+let currentY = 50;
+let moveInterval, layInterval;
 
-// --- Chicken Movement Logic ---
+// --- Start Game Logic ---
+startBtn.addEventListener('click', () => {
+    score = 0;
+    scoreDisplay.textContent = score;
+    overlay.classList.add('hidden');
+    gameActive = true;
+    
+    // Start intervals
+    moveChicken(); // First move
+    moveInterval = setInterval(moveChicken, CHICKEN_SPEED);
+    layInterval = setInterval(layEgg, LAY_RATE);
+});
+
+// --- Walking Chicken Logic ---
 function moveChicken() {
-    const maxX = 80;
-    const maxY = 80;
-    const minX = 10;
-    const minY = 10;
+    if (!gameActive) return;
 
-    chickenX = Math.random() * (maxX - minX) + minX;
-    chickenY = Math.random() * (maxY - minY) + minY;
+    // Random new position
+    const nextX = Math.random() * 70 + 10;
+    const nextY = Math.random() * 60 + 20;
 
-    chicken.style.left = `${chickenX}%`;
-    chicken.style.top = `${chickenY}%`;
+    // Determine direction (flip image)
+    if (nextX > currentX) {
+        chicken.style.transform = 'scaleX(1)'; // Face right
+    } else {
+        chicken.style.transform = 'scaleX(-1)'; // Face left
+    }
+
+    chicken.style.left = `${nextX}%`;
+    chicken.style.top = `${nextY}%`;
+
+    currentX = nextX;
+    currentY = nextY;
 }
 
-// --- Egg Laying Logic ---
+// --- Egg Laying Logic (From the back!) ---
 function layEgg() {
+    if (!gameActive) return;
+
     const egg = document.createElement('div');
     egg.className = 'egg';
     
-    // Position egg slightly offset from chicken's center
-    const eggX = chickenX + (Math.random() * 5 - 2.5);
-    const eggY = chickenY + 5; 
+    // Position egg slightly BEHIND the chicken's current position
+    // We use a small timeout to let the chicken move a bit before dropping
+    const eggX = currentX;
+    const eggY = currentY + 5; 
 
     egg.style.left = `${eggX}%`;
     egg.style.top = `${eggY}%`;
 
     const img = document.createElement('img');
     img.src = eggImgSrc;
-    img.alt = 'Fresh Egg';
     egg.appendChild(img);
 
-    // Click to Blast (Responsive for touch/mouse)
+    // Blast Interaction
     egg.addEventListener('pointerdown', (e) => {
-        blastEgg(egg, e.clientX, e.clientY);
+        if (!gameActive) return;
+        shatterEgg(egg, e.clientX, e.clientY);
     });
 
     gameContainer.appendChild(egg);
 
-    // Optional: Eggs fade out/expire after 10s if not clicked
+    // Auto-remove if too old
     setTimeout(() => {
         if (egg.parentNode === gameContainer) {
             egg.style.opacity = '0';
-            setTimeout(() => {
-                if (egg.parentNode === gameContainer) gameContainer.removeChild(egg);
-            }, 500);
+            setTimeout(() => egg.remove(), 500);
         }
-    }, 10000);
+    }, 6000);
 }
 
-// --- Blast Effect Logic ---
-function blastEgg(egg, x, y) {
-    // Increase Score
+// --- NEW Shatter Blast Logic ---
+function shatterEgg(egg, mouseX, mouseY) {
     score += 10;
     scoreDisplay.textContent = score;
 
-    // Create Blast Element at click location
-    const blast = document.createElement('div');
-    blast.className = 'blast';
-    
-    // Convert click coordinates to container relative
     const rect = gameContainer.getBoundingClientRect();
-    const relativeX = x - rect.left;
-    const relativeY = y - rect.top;
+    const x = mouseX - rect.left;
+    const y = mouseY - rect.top;
 
-    blast.style.left = `${relativeX}px`;
-    blast.style.top = `${relativeY}px`;
-
-    gameContainer.appendChild(blast);
-
-    // Particle Effect
-    createParticles(relativeX, relativeY);
-
-    // Remove egg and blast element
-    gameContainer.removeChild(egg);
-    setTimeout(() => {
-        gameContainer.removeChild(blast);
-    }, 400);
-}
-
-function createParticles(x, y) {
-    const count = 12;
-    for (let i = 0; i < count; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
+    // Create Shatter Particles (Shell fragments)
+    const fragmentCount = 15;
+    for (let i = 0; i < fragmentCount; i++) {
+        const frag = document.createElement('div');
+        frag.className = 'fragment';
         
-        const size = Math.random() * 10 + 5;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.backgroundColor = i % 2 === 0 ? '#ffd700' : '#ffffff';
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        particle.style.opacity = '1';
+        // Random shell shape characteristics
+        const size = Math.random() * 12 + 4;
+        frag.style.width = `${size}px`;
+        frag.style.height = `${size}px`;
+        frag.style.backgroundColor = i % 3 === 0 ? '#fff' : '#fff9e6';
+        frag.style.left = `${x}px`;
+        frag.style.top = `${y}px`;
+        frag.style.transform = `rotate(${Math.random() * 360}deg)`;
         
-        gameContainer.appendChild(particle);
+        gameContainer.appendChild(frag);
 
+        // Explode outward
         const angle = Math.random() * Math.PI * 2;
-        const velocity = Math.random() * 150 + 50;
-        const dx = Math.cos(angle) * velocity;
-        const dy = Math.sin(angle) * velocity;
+        const dist = Math.random() * 250 + 100;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
 
-        particle.animate([
-            { transform: 'translate(0, 0)', opacity: 1 },
-            { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+        frag.animate([
+            { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
+            { transform: `translate(${tx}px, ${ty}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
         ], {
-            duration: 800,
+            duration: 800 + Math.random() * 400,
             easing: 'cubic-bezier(0, .9, .57, 1)'
-        }).onfinish = () => particle.remove();
+        }).onfinish = () => frag.remove();
     }
+
+    // Shockwave effect
+    const shock = document.createElement('div');
+    shock.className = 'blast'; // Reuse old blast class for ring effect
+    shock.style.left = `${x}px`;
+    shock.style.top = `${y}px`;
+    gameContainer.appendChild(shock);
+    setTimeout(() => shock.remove(), 400);
+
+    egg.remove();
 }
 
-// --- Initial Launch ---
-moveChicken();
-setInterval(moveChicken, MOVE_INTERVAL);
-setInterval(layEgg, LAY_INTERVAL);
-
-// Initial Score setup
-scoreDisplay.textContent = '0';
+// Prevent context menu to keep interaction smooth
+window.addEventListener('contextmenu', (e) => e.preventDefault());

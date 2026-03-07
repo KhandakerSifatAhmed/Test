@@ -7,13 +7,14 @@
     --glass-border: rgba(255, 255, 255, 0.1);
     --text-color: #f0f6fc;
     --font-main: 'Outfit', sans-serif;
-    --farm-green: #2d5a27;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -30,7 +31,7 @@ body {
 
 #game-container {
     width: 95vw;
-    height: 80vh;
+    height: 85vh;
     max-width: 1000px;
     background: radial-gradient(circle at center, #1a2f1a 0%, #0d1117 100%);
     border: 2px solid var(--glass-border);
@@ -38,53 +39,64 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    cursor: crosshair;
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 2rem;
-    z-index: 10;
-}
-
-h1 {
+/* Header & Menu */
+.header h1 {
     font-size: 3.5rem;
+    margin-bottom: 10px;
+    text-align: center;
     background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    letter-spacing: -1px;
+    filter: drop-shadow(0 5px 15px rgba(255, 215, 0, 0.3));
+}
+
+#overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.5s ease;
+}
+
+#overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.start-btn {
+    padding: 20px 50px;
+    font-size: 2rem;
     font-weight: 700;
+    color: white;
+    background: linear-gradient(45deg, var(--primary-dark), var(--accent));
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(255, 77, 77, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: pulse-button 2s infinite;
 }
 
-@media (max-width: 768px) {
-    h1 {
-        font-size: 2.2rem;
-    }
-    
-    #game-container {
-        height: 70vh;
-        border-radius: 20px;
-    }
-    
-    .stats {
-        padding: 6px 15px;
-        font-size: 1.1rem;
-        top: 10px;
-        right: 10px;
-    }
-    
-    #chicken {
-        width: 90px;
-        height: 90px;
-    }
-    
-    .egg {
-        width: 50px;
-        height: 50px;
-    }
+.start-btn:hover {
+    transform: scale(1.05);
 }
 
+@keyframes pulse-button {
+    0% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(255, 77, 77, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 77, 77, 0); }
+}
+
+/* Stats */
 .stats {
     position: absolute;
     top: 20px;
@@ -97,94 +109,71 @@ h1 {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--primary);
-    z-index: 20;
+    z-index: 50;
 }
 
-/* Chicken Styling */
+/* Chicken Walking Animation */
 #chicken {
     position: absolute;
     width: 120px;
     height: 120px;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 15;
+    transition: left 2s linear, top 2s linear;
+    z-index: 20;
     pointer-events: none;
-    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
 }
 
 #chicken img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    animation: bob 1s ease-in-out infinite alternate;
 }
 
-@keyframes bob {
-    from { transform: translateY(0) rotate(-2deg); }
-    to { transform: translateY(-10px) rotate(2deg); }
+/* Walking Bobbing Effect */
+.walking img {
+    animation: walk-cycle 0.5s infinite alternate ease-in-out;
 }
 
-/* Egg Styling */
+@keyframes walk-cycle {
+    0% { transform: translateY(0) rotate(-5deg); }
+    100% { transform: translateY(-15px) rotate(5deg); }
+}
+
+/* Egg Drop Animation */
 .egg {
     position: absolute;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
+    z-index: 15;
     cursor: pointer;
-    transition: transform 0.2s;
-    z-index: 10;
-    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+    animation: egg-emerge 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.egg:hover {
-    transform: scale(1.1);
+@keyframes egg-emerge {
+    0% { transform: scale(0) translateY(-20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .egg img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    animation: pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* Blast Effect */
-.blast {
+/* Explosion Shell Fragments */
+.fragment {
     position: absolute;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-    border-radius: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    animation: blast-anim 0.4s ease-out forwards;
-    z-index: 25;
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-radius: 2px;
     pointer-events: none;
+    z-index: 30;
 }
 
-@keyframes blast-anim {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-    50% { opacity: 0.8; }
-    100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
-}
-
-.instruction {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.9rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-/* Background Particles */
-.particle {
-    position: absolute;
-    background: white;
-    border-radius: 50%;
-    pointer-events: none;
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .header h1 { font-size: 2.2rem; }
+    #chicken { width: 90px; height: 90px; }
+    .egg { width: 40px; height: 40px; }
+    .start-btn { padding: 15px 40px; font-size: 1.5rem; }
 }

@@ -21,17 +21,21 @@
     </header>
 
     <main id="game-container">
+        <!-- Start Game Screen -->
+        <div id="overlay">
+            <button id="start-btn" class="start-btn">START GAME</button>
+            <p style="color: rgba(255, 255, 255, 0.4); margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;">Blasters at the ready!</p>
+        </div>
+
         <div class="stats">
             Score: <span id="score">0</span>
         </div>
 
-        <div id="chicken">
+        <!-- Chicken will walk here -->
+        <div id="chicken" class="walking">
             <img src="sneha_the_chicken.png" alt="Sneha the Chicken">
         </div>
 
-        <div class="instruction">
-            Click the eggs to blast them before they grow!
-        </div>
     </main>
 
     <!-- JS Logic -->
