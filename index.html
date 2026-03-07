@@ -3,67 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Snake | Premium Arcade Experience</title>
-    <meta name="description" content="Experience the classic Snake game with a modern neon aesthetic. Smooth controls and high-speed arcade action.">
-    <link rel="stylesheet" href="style.css">
+    <title>Sneha the Chicken | Egg Blast Challenge</title>
+    <meta name="description" content="Catch and blast eggs laid by Sneha the Chicken in this fast-paced, vibrant web-based game.">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="background-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-    </div>
 
-    <main class="game-container">
-        <header class="game-header">
-            <div class="logo">
-                <span class="logo-icon">🐍</span>
-                <h1>NEON<span>SNAKE</span></h1>
-            </div>
-            <div class="stats-panel">
-                <div class="stat-item">
-                    <span class="stat-label">SCORE</span>
-                    <span id="score" class="stat-value">000</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">HIGH SCORE</span>
-                    <span id="highScore" class="stat-value">000</span>
-                </div>
-            </div>
-        </header>
+    <header class="header">
+        <h1>Sneha the<span>Chicken</span></h1>
+    </header>
 
-        <div class="canvas-wrapper">
-            <canvas id="gameCanvas"></canvas>
-            
-            <div id="overlay" class="overlay">
-                <div class="overlay-content">
-                    <h2 id="overlay-title">READY?</h2>
-                    <p id="overlay-msg">Press Space or Start to Play</p>
-                    <button id="start-btn" class="primary-btn">START GAME</button>
-                    <div class="controls-hint">
-                        <span>Use <kbd>Arrow Keys</kbd> or <kbd>WASD</kbd> to Move</span>
-                    </div>
-                </div>
-            </div>
+    <main id="game-container">
+        <div class="stats">
+            Score: <span id="score">0</span>
         </div>
 
-        <div class="mobile-controls">
-            <button id="up-btn" class="ctrl-btn up"><span class="chevron">▲</span></button>
-            <div class="middle-row">
-                <button id="left-btn" class="ctrl-btn left"><span class="chevron">◀</span></button>
-                <button id="down-btn" class="ctrl-btn down"><span class="chevron">▼</span></button>
-                <button id="right-btn" class="ctrl-btn right"><span class="chevron">▶</span></button>
-            </div>
+        <div id="chicken">
+            <img src="sneha_the_chicken.png" alt="Sneha the Chicken">
         </div>
 
-        <footer class="game-footer">
-            <p class="desktop-only">Use Arrow Keys or WASD to Move</p>
-            <p class="mobile-only">Tap the controls to move</p>
-        </footer>
+        <div class="instruction">
+            Click the eggs to blast them before they grow!
+        </div>
     </main>
 
+    <!-- JS Logic -->
     <script src="script.js"></script>
 </body>
 </html>

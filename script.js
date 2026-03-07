@@ -1,274 +1,132 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const scoreElement = document.getElementById('score');
-const highScoreElement = document.getElementById('highScore');
-const overlay = document.getElementById('overlay');
-const overlayTitle = document.getElementById('overlay-title');
-const overlayMsg = document.getElementById('overlay-msg');
-const startBtn = document.getElementById('start-btn');
+const gameContainer = document.getElementById('game-container');
+const chicken = document.getElementById('chicken');
+const scoreDisplay = document.getElementById('score');
+
+let score = 0;
+const eggImgSrc = 'pixel_egg.png';
 
 // Game constants
-const gridSize = 20;
-let tileCount;
-let tileSize;
+const LAY_INTERVAL = 1500; // Lay an egg every 1.5s
+const MOVE_INTERVAL = 2000; // Move chicken every 2s
 
-// Game state
-let score = 0;
-let highScore = localStorage.getItem('snakeHighScore') || 0;
-let gameRunning = false;
-let gameLoopId;
+// Chicken Position State
+let chickenX = 50; // percentage
+let chickenY = 50; // percentage
 
-let snake = [];
-let food = { x: 5, y: 5 };
-let dx = 0;
-let dy = 0;
-let nextDx = 0;
-let nextDy = 0;
-let lastUpdateTime = 0;
-let gameSpeed = 150; // ms per move
+// --- Chicken Movement Logic ---
+function moveChicken() {
+    const maxX = 80;
+    const maxY = 80;
+    const minX = 10;
+    const minY = 10;
 
-// Initialize
-function init() {
-    resizeCanvas();
-    highScoreElement.textContent = formatScore(highScore);
+    chickenX = Math.random() * (maxX - minX) + minX;
+    chickenY = Math.random() * (maxY - minY) + minY;
+
+    chicken.style.left = `${chickenX}%`;
+    chicken.style.top = `${chickenY}%`;
+}
+
+// --- Egg Laying Logic ---
+function layEgg() {
+    const egg = document.createElement('div');
+    egg.className = 'egg';
     
-    // Update msg for mobile
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-        overlayMsg.textContent = "Tap Start to Play";
-    }
-    
-    resetGame();
-}
+    // Position egg slightly offset from chicken's center
+    const eggX = chickenX + (Math.random() * 5 - 2.5);
+    const eggY = chickenY + 5; 
 
-function resizeCanvas() {
-    const size = canvas.clientWidth;
-    canvas.width = size;
-    canvas.height = size;
-    tileCount = gridSize;
-    tileSize = canvas.width / tileCount;
-}
+    egg.style.left = `${eggX}%`;
+    egg.style.top = `${eggY}%`;
 
-function formatScore(num) {
-    return num.toString().padStart(3, '0');
-}
+    const img = document.createElement('img');
+    img.src = eggImgSrc;
+    img.alt = 'Fresh Egg';
+    egg.appendChild(img);
 
-function resetGame() {
-    score = 0;
-    scoreElement.textContent = formatScore(score);
-    snake = [
-        { x: 10, y: 10 },
-        { x: 10, y: 11 },
-        { x: 10, y: 12 }
-    ];
-    dx = 0;
-    dy = -1;
-    nextDx = 0;
-    nextDy = -1;
-    createFood();
-}
-
-function createFood() {
-    food = {
-        x: Math.floor(Math.random() * tileCount),
-        y: Math.floor(Math.random() * tileCount)
-    };
-    // Ensure food doesn't land on snake
-    if (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
-        createFood();
-    }
-}
-
-function startGame() {
-    if (gameRunning) return;
-    resetGame();
-    gameRunning = true;
-    overlay.classList.add('hidden');
-    lastUpdateTime = performance.now();
-    requestAnimationFrame(gameLoop);
-}
-
-function gameOver() {
-    gameRunning = false;
-    overlay.classList.remove('hidden');
-    overlayTitle.textContent = "GAME OVER";
-    overlayMsg.textContent = `You scored ${score} points!`;
-    startBtn.textContent = "TRY AGAIN";
-    
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('snakeHighScore', highScore);
-        highScoreElement.textContent = formatScore(highScore);
-    }
-}
-
-// Input handling
-window.addEventListener('keydown', e => {
-    switch(e.key) {
-        case 'ArrowUp':
-        case 'w':
-        case 'W':
-            if (dy !== 1) { nextDx = 0; nextDy = -1; }
-            break;
-        case 'ArrowDown':
-        case 's':
-        case 'S':
-            if (dy !== -1) { nextDx = 0; nextDy = 1; }
-            break;
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-            if (dx !== 1) { nextDx = -1; nextDy = 0; }
-            break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-            if (dx !== -1) { nextDx = 1; nextDy = 0; }
-            break;
-        case ' ':
-            if (!gameRunning) startGame();
-            break;
-    }
-});
-
-startBtn.addEventListener('click', startGame);
-
-// Mobile Controls
-const upBtn = document.getElementById('up-btn');
-const downBtn = document.getElementById('down-btn');
-const leftBtn = document.getElementById('left-btn');
-const rightBtn = document.getElementById('right-btn');
-
-upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== 1) { nextDx = 0; nextDy = -1; } });
-downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== -1) { nextDx = 0; nextDy = 1; } });
-leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== 1) { nextDx = -1; nextDy = 0; } });
-rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { nextDx = 1; nextDy = 0; } });
-
-// Also add click for debugging on desktop or for non-touch mobile browsers
-upBtn.addEventListener('click', () => { if (dy !== 1) { nextDx = 0; nextDy = -1; } });
-downBtn.addEventListener('click', () => { if (dy !== -1) { nextDx = 0; nextDy = 1; } });
-leftBtn.addEventListener('click', () => { if (dx !== 1) { nextDx = -1; nextDy = 0; } });
-rightBtn.addEventListener('click', () => { if (dx !== -1) { nextDx = 1; nextDy = 0; } });
-
-window.addEventListener('resize', resizeCanvas);
-
-// Prevent scrolling on mobile when touching the game
-document.body.addEventListener('touchmove', (e) => {
-    if (gameRunning) e.preventDefault();
-}, { passive: false });
-
-// Game Loop
-function gameLoop(currentTime) {
-    if (!gameRunning) return;
-
-    requestAnimationFrame(gameLoop);
-
-    const deltaTime = currentTime - lastUpdateTime;
-    if (deltaTime < gameSpeed) return;
-
-    lastUpdateTime = currentTime;
-    update();
-    draw();
-}
-
-function update() {
-    dx = nextDx;
-    dy = nextDy;
-
-    const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-
-    // Wall collision
-    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-        gameOver();
-        return;
-    }
-
-    // Self collision
-    if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-        gameOver();
-        return;
-    }
-
-    snake.unshift(head);
-
-    // Food collision
-    if (head.x === food.x && head.y === food.y) {
-        score += 10;
-        scoreElement.textContent = formatScore(score);
-        createFood();
-        // Speed up slightly
-        if (gameSpeed > 70) gameSpeed -= 1;
-    } else {
-        snake.pop();
-    }
-}
-
-function draw() {
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw Grid (Subtle)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= tileCount; i++) {
-        ctx.beginPath();
-        ctx.moveTo(i * tileSize, 0);
-        ctx.lineTo(i * tileSize, canvas.height);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(0, i * tileSize);
-        ctx.lineTo(canvas.width, i * tileSize);
-        ctx.stroke();
-    }
-
-    // Draw Food
-    const foodPadding = tileSize * 0.2;
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = '#ff007a';
-    ctx.fillStyle = '#ff007a';
-    ctx.beginPath();
-    ctx.arc(
-        food.x * tileSize + tileSize / 2,
-        food.y * tileSize + tileSize / 2,
-        (tileSize / 2) - foodPadding,
-        0,
-        Math.PI * 2
-    );
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // Draw Snake
-    snake.forEach((segment, index) => {
-        const isHead = index === 0;
-        const padding = isHead ? 2 : 3;
-        
-        ctx.shadowBlur = isHead ? 10 : 0;
-        ctx.shadowColor = '#00f2ff';
-        
-        // Gradient color based on position
-        const alpha = 1 - (index / snake.length) * 0.6;
-        ctx.fillStyle = isHead ? '#00f2ff' : `rgba(112, 0, 255, ${alpha})`;
-        
-        drawRoundedRect(
-            segment.x * tileSize + padding,
-            segment.y * tileSize + padding,
-            tileSize - padding * 2,
-            tileSize - padding * 2,
-            isHead ? 6 : 4
-        );
+    // Click to Blast (Responsive for touch/mouse)
+    egg.addEventListener('pointerdown', (e) => {
+        blastEgg(egg, e.clientX, e.clientY);
     });
+
+    gameContainer.appendChild(egg);
+
+    // Optional: Eggs fade out/expire after 10s if not clicked
+    setTimeout(() => {
+        if (egg.parentNode === gameContainer) {
+            egg.style.opacity = '0';
+            setTimeout(() => {
+                if (egg.parentNode === gameContainer) gameContainer.removeChild(egg);
+            }, 500);
+        }
+    }, 10000);
 }
 
-function drawRoundedRect(x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.arcTo(x + width, y, x + width, y + height, radius);
-    ctx.arcTo(x + width, y + height, x, y + height, radius);
-    ctx.arcTo(x, y + height, x, y, radius);
-    ctx.arcTo(x, y, x + width, y, radius);
-    ctx.closePath();
-    ctx.fill();
+// --- Blast Effect Logic ---
+function blastEgg(egg, x, y) {
+    // Increase Score
+    score += 10;
+    scoreDisplay.textContent = score;
+
+    // Create Blast Element at click location
+    const blast = document.createElement('div');
+    blast.className = 'blast';
+    
+    // Convert click coordinates to container relative
+    const rect = gameContainer.getBoundingClientRect();
+    const relativeX = x - rect.left;
+    const relativeY = y - rect.top;
+
+    blast.style.left = `${relativeX}px`;
+    blast.style.top = `${relativeY}px`;
+
+    gameContainer.appendChild(blast);
+
+    // Particle Effect
+    createParticles(relativeX, relativeY);
+
+    // Remove egg and blast element
+    gameContainer.removeChild(egg);
+    setTimeout(() => {
+        gameContainer.removeChild(blast);
+    }, 400);
 }
 
-// Initial Call
-init();
-draw(); // Draw initial state
+function createParticles(x, y) {
+    const count = 12;
+    for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const size = Math.random() * 10 + 5;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.backgroundColor = i % 2 === 0 ? '#ffd700' : '#ffffff';
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.opacity = '1';
+        
+        gameContainer.appendChild(particle);
+
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 150 + 50;
+        const dx = Math.cos(angle) * velocity;
+        const dy = Math.sin(angle) * velocity;
+
+        particle.animate([
+            { transform: 'translate(0, 0)', opacity: 1 },
+            { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+        ], {
+            duration: 800,
+            easing: 'cubic-bezier(0, .9, .57, 1)'
+        }).onfinish = () => particle.remove();
+    }
+}
+
+// --- Initial Launch ---
+moveChicken();
+setInterval(moveChicken, MOVE_INTERVAL);
+setInterval(layEgg, LAY_INTERVAL);
+
+// Initial Score setup
+scoreDisplay.textContent = '0';
