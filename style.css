@@ -186,6 +186,7 @@ canvas {
     margin-bottom: 0.5rem;
     background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -240,7 +241,74 @@ kbd {
     font-style: italic;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        align-items: center;
+        overflow-y: auto; /* Allow scrolling to controls if screen is small */
+    }
+
+    .game-container {
+        gap: 1rem;
+        padding-bottom: 2rem;
+    }
+
     #overlay-title { font-size: 2rem; }
-    .game-header { padding: 1rem; }
+    .game-header { padding: 0.75rem 1rem; }
+    
+    .desktop-only { display: none; }
+    .mobile-only { display: block; }
+}
+
+@media (min-width: 769px) {
+    .mobile-controls { display: none; }
+    .mobile-only { display: none; }
+    .desktop-only { display: block; }
+}
+
+/* Mobile Controls Styling */
+.mobile-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 1rem;
+}
+
+.middle-row {
+    display: flex;
+    gap: 10px;
+}
+
+.ctrl-btn {
+    width: 65px;
+    height: 65px;
+    border-radius: 15px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+    color: var(--accent-primary);
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.1s;
+    touch-action: manipulation;
+}
+
+.ctrl-btn:active {
+    background: var(--accent-primary);
+    color: var(--bg-color);
+    transform: scale(0.95);
+    box-shadow: 0 0 20px var(--accent-primary);
+}
+
+.ctrl-btn.up {
+    margin-bottom: -5px;
+}
+
+.chevron {
+    pointer-events: none;
 }

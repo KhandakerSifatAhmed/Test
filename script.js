@@ -31,6 +31,12 @@ let gameSpeed = 150; // ms per move
 function init() {
     resizeCanvas();
     highScoreElement.textContent = formatScore(highScore);
+    
+    // Update msg for mobile
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        overlayMsg.textContent = "Tap Start to Play";
+    }
+    
     resetGame();
 }
 
@@ -125,7 +131,30 @@ window.addEventListener('keydown', e => {
 });
 
 startBtn.addEventListener('click', startGame);
+
+// Mobile Controls
+const upBtn = document.getElementById('up-btn');
+const downBtn = document.getElementById('down-btn');
+const leftBtn = document.getElementById('left-btn');
+const rightBtn = document.getElementById('right-btn');
+
+upBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== 1) { nextDx = 0; nextDy = -1; } });
+downBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dy !== -1) { nextDx = 0; nextDy = 1; } });
+leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== 1) { nextDx = -1; nextDy = 0; } });
+rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); if (dx !== -1) { nextDx = 1; nextDy = 0; } });
+
+// Also add click for debugging on desktop or for non-touch mobile browsers
+upBtn.addEventListener('click', () => { if (dy !== 1) { nextDx = 0; nextDy = -1; } });
+downBtn.addEventListener('click', () => { if (dy !== -1) { nextDx = 0; nextDy = 1; } });
+leftBtn.addEventListener('click', () => { if (dx !== 1) { nextDx = -1; nextDy = 0; } });
+rightBtn.addEventListener('click', () => { if (dx !== -1) { nextDx = 1; nextDy = 0; } });
+
 window.addEventListener('resize', resizeCanvas);
+
+// Prevent scrolling on mobile when touching the game
+document.body.addEventListener('touchmove', (e) => {
+    if (gameRunning) e.preventDefault();
+}, { passive: false });
 
 // Game Loop
 function gameLoop(currentTime) {
