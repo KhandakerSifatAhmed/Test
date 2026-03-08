@@ -2,43 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sneha the Chicken | Egg Blast Challenge</title>
-    <meta name="description" content="Catch and blast eggs laid by Sneha the Chicken in this fast-paced, vibrant web-based game.">
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- CSS Styles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sneha City Run | Subway Runner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header class="header">
-        <h1>Sneha the<span>Chicken</span></h1>
-    </header>
-
-    <main id="game-container">
-        <!-- Start Game Screen -->
-        <div id="overlay">
-            <button id="start-btn" class="start-btn">START GAME</button>
-            <p style="color: rgba(255, 255, 255, 0.4); margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;">Blasters at the ready!</p>
+    <div id="game-wrapper">
+        <!-- City Environment -->
+        <div class="sky"></div>
+        <div class="city-layers">
+            <div class="buildings"></div>
         </div>
 
-        <div class="stats">
-            Score: <span id="score">0</span>
+        <div id="game-world">
+            <div id="road-perspective">
+                <div class="sidewalk left"></div>
+                <div class="sidewalk right"></div>
+                <div id="road">
+                    <div class="lane-lines"></div>
+                    <div class="road-scroller"></div>
+                </div>
+            </div>
+
+            <!-- Character Container -->
+            <div id="sneha" class="center-lane">
+                <div class="character-wrapper">
+                    <div class="leg leg-left"></div>
+                    <div class="leg leg-right"></div>
+                    <img id="sneha-img" src="sneha_sleeping.png" alt="Sneha">
+                </div>
+                <div class="shadow"></div>
+            </div>
         </div>
 
-        <!-- Chicken will walk here -->
-        <div id="chicken" class="walking">
-            <img src="sneha_the_chicken.png" alt="Sneha the Chicken">
+        <!-- Gameplay UI -->
+        <div id="game-ui">
+            <div class="ui-panel score-panel">Score: <span id="score">0</span></div>
+            <div class="ui-panel level-panel">Level: <span id="level">1</span></div>
         </div>
 
-    </main>
+        <!-- Overlays -->
+        <div id="splash-screen" class="screen">
+            <div class="splash-content">
+                <img src="sneha_sleeping.png" class="splash-img">
+                <h1 class="title">Sneha City Run</h1>
+                <div class="clock" id="splash-clock">11:59:50</div>
+                <p id="splash-message">Sneha is dreaming...</p>
+            </div>
+        </div>
 
-    <!-- JS Logic -->
+        <div id="main-menu" class="screen hidden">
+            <h1 class="title">City Runner</h1>
+            <button id="start-btn" class="menu-btn">START RUN</button>
+            <p class="controls-hint">Swipe to Move, Jump & Slide</p>
+        </div>
+
+        <div id="game-over-screen" class="screen hidden">
+            <h2 class="title" style="color: #ff4d4d;">CRASHED!</h2>
+            <div class="stats">
+                <p>Score: <span id="final-score">0</span></p>
+                <p>High Score: <span id="high-score-total">0</span></p>
+            </div>
+            <button id="restart-btn" class="menu-btn">RETRY</button>
+            <button id="menu-btn-over" class="menu-btn">MENU</button>
+        </div>
+    </div>
+
+    <!-- SFX -->
+    <audio id="sfx-lay" src="https://assets.mixkit.co/sfx/preview/mixkit-chicken-cluck-1589.mp3"></audio>
+    <audio id="sfx-break" src="https://assets.mixkit.co/sfx/preview/mixkit-cracking-an-egg-2374.mp3"></audio>
+    <audio id="sfx-over" src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-failure-piano-404.mp3"></audio>
+    <audio id="sfx-level" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3"></audio>
+
     <script src="script.js"></script>
+
+    <!-- Character Background Filter -->
+    <svg style="visibility: hidden; width: 0; height: 0; position: absolute;">
+        <filter id="remove-white">
+            <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -3 -3 -3 1 8.5"/>
+            <feComponentTransfer><feFuncA type="discrete" tableValues="0 0 1 1"/></feComponentTransfer>
+        </filter>
+    </svg>
 </body>
 </html>
